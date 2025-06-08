@@ -17,6 +17,7 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
@@ -130,8 +131,8 @@ public class MainActivity extends AppCompatActivity {
             // Demande la position actuelle
             fusedLocationClient.requestLocationUpdates(locationRequest, new LocationCallback() {
                 @Override
-                public void onLocationResult(LocationResult locationResult) {
-                    if (locationResult != null && locationResult.getLastLocation() != null) {
+                public void onLocationResult(@NonNull LocationResult locationResult) {
+                    if (locationResult.getLastLocation() != null) {
                         // Récupère et enregistre les coordonnées
                         double latitude = locationResult.getLastLocation().getLatitude();
                         double longitude = locationResult.getLastLocation().getLongitude();
@@ -206,6 +207,7 @@ public class MainActivity extends AppCompatActivity {
             if (uri != null) {
                 // Écriture du fichier
                 try (FileOutputStream fos = (FileOutputStream) getContentResolver().openOutputStream(uri)) {
+                    assert fos != null;
                     fos.write(gpxContent.toString().getBytes());
                 }
 
