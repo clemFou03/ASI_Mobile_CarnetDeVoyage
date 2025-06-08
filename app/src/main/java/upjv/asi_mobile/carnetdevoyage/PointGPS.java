@@ -1,11 +1,11 @@
 package upjv.asi_mobile.carnetdevoyage;
 
 public class PointGPS {
-    private long id;
-    private long trajetId;
-    private double latitude;
-    private double longitude;
-    private String timestamp;
+    private final long id;
+    private final long trajetId;
+    private final double latitude;
+    private final double longitude;
+    private final String timestamp;
 
     public PointGPS(long id, long trajetId, double latitude, double longitude, String timestamp) {
         this.id = id;
@@ -14,7 +14,6 @@ public class PointGPS {
         this.longitude = longitude;
         this.timestamp = timestamp;
     }
-
 
     public long getId() { return id; }
     public long getTrajetId() { return trajetId; }
