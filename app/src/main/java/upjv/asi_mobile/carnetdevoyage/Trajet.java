@@ -1,8 +1,7 @@
-package upjv.asi_mobile.carnetdevoyage;;
+package upjv.asi_mobile.carnetdevoyage;
 
 import java.util.ArrayList;
 import java.util.List;
-
 
 public class Trajet {
     private long id;
