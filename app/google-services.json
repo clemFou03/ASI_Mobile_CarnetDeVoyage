@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1042755173803",
+    "project_id": "carnetdevoyage-6e869",
+    "storage_bucket": "carnetdevoyage-6e869.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1042755173803:android:4a4c33b121968088b766ee",
+        "android_client_info": {
+          "package_name": "upjv.asi_mobile.carnetdevoyage"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAn_5BwiHaAIzUygH5ENh2zJiT5F21LiVA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

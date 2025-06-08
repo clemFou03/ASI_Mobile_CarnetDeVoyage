@@ -1,5 +1,6 @@
 package upjv.asi_mobile.carnetdevoyage;
 
+
 import android.Manifest;
 import android.content.ContentValues;
 import android.content.Intent;
@@ -17,7 +18,6 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
@@ -26,40 +26,42 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+
 import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
-    // Éléments de l'interface utilisateur
     private RadioGroup radioGroupMode;
     private Button btnStart, btnPoint, btnEnd;
-    private FusedLocationProviderClient fusedLocationClient; // Client pour accéder aux services de localisation
+    private FusedLocationProviderClient fusedLocationClient;
     private DatabaseHelper dbHelper;
-    private long currentTrajetId = -1; // ID du trajet en cours
-    private boolean isTracking = false; // Indique si un trajet est en cours
-    private boolean isManualMode = true; // Indicateur pour le mode de pointage (manuel/automatique)
-    private Handler handler; // Pour gérer les tâches périodiques
-    private Runnable periodicTask; // Tâche pour le pointage automatique
-    private ActivityResultLauncher<String> requestPermissionLauncher; // Pour demander la permission de localisation
+    private long currentTrajetId = -1; // Identifiant du trajet en cours
+    private boolean isTracking = false; // Indique si le suivi est actif
+    private boolean isManualMode = true; // Mode manuel ou automatique
+    private Handler handler;
+    private Runnable periodicTask;
+    private ActivityResultLauncher<String> requestPermissionLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Initialisation des composants UI
+        // Initialisation des composants de l'interface UI
         radioGroupMode = findViewById(R.id.radioGroupMode);
         btnStart = findViewById(R.id.btnStart);
         btnPoint = findViewById(R.id.btnPoint);
         btnEnd = findViewById(R.id.btnEnd);
         // Initialisation des services
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        dbHelper = new DatabaseHelper(this);
+        dbHelper = new DatabaseHelper();
         handler = new Handler(Looper.getMainLooper());
 
-        // Configuration du launcher pour les permissions
+        // Gestion de la demande de permission GPS
         requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
             if (isGranted) {
                 startTracking();
@@ -68,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Gestion du clic sur le bouton "Départ"
+        // Bouton pour démarrer le suivi
         btnStart.setOnClickListener(v -> {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
@@ -77,10 +79,10 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Gestion du clic sur le bouton "Pointage"
+        // Bouton pour enregistrer un point manuellement
         btnPoint.setOnClickListener(v -> saveCurrentLocation());
 
-        // Gestion du clic sur le bouton "Fin"
+        // Bouton pour arrêter le suivi
         btnEnd.setOnClickListener(v -> endTracking());
     }
 
@@ -88,27 +90,27 @@ public class MainActivity extends AppCompatActivity {
      * Démarre le suivi du trajet selon le mode sélectionné
      */
     private void startTracking() {
-        // Détermine le mode de pointage sélectionné
+        // Vérifie si le mode manuel est sélectionné
         isManualMode = ((RadioButton) findViewById(radioGroupMode.getCheckedRadioButtonId())).getText().toString().equals("Pointage manuel");
         isTracking = true;
-        radioGroupMode.setEnabled(false); // Désactive le choix du mode pendant le trajet
+        radioGroupMode.setEnabled(false); // Désactive le choix du mode pendant le suivi
         btnStart.setVisibility(View.GONE);
         btnEnd.setVisibility(View.VISIBLE);
         if (isManualMode) {
-            btnPoint.setVisibility(View.VISIBLE); // Mode manuel: affiche le bouton de pointage
+            btnPoint.setVisibility(View.VISIBLE); // Affiche le bouton de pointage en mode manuel
         } else {
-            // Mode automatique : active le pointage automatique
+            // Tâche périodique pour enregistrer la position toutes les 5 minutes en mode automatique
             periodicTask = new Runnable() {
                 @Override
                 public void run() {
                     saveCurrentLocation();
-                    handler.postDelayed(this, 10 * 1000); // Toutes les 10 secondes
+                    handler.postDelayed(this, 5 * 60 * 1000); // 5 minutes
                 }
             };
             handler.post(periodicTask);
         }
 
-        // Crée un nouveau trajet dans la bd
+        // Enregistre un nouveau trajet avec un nom basé sur la date et l'heure
         currentTrajetId = dbHelper.addTrajet("Trajet " + new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date()));
     }
 
@@ -116,24 +118,23 @@ public class MainActivity extends AppCompatActivity {
      * Enregistre la position actuelle dans la base de données
      */
     private void saveCurrentLocation() {
-        // Vérifie la permission GPS
+        // Vérifie la permission GPS avant d'accéder à la localisation
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             showAlert("Permission GPS non accordée. Impossible d'enregistrer la position.");
             return;
         }
 
-        // Configure la requête de localisation
+        // Configuration de la requête de localisation
         LocationRequest locationRequest = LocationRequest.create()
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
                 .setInterval(10000);
 
         try {
-            // Demande la position actuelle
             fusedLocationClient.requestLocationUpdates(locationRequest, new LocationCallback() {
                 @Override
-                public void onLocationResult(@NonNull LocationResult locationResult) {
-                    if (locationResult.getLastLocation() != null) {
-                        // Récupère et enregistre les coordonnées
+                public void onLocationResult(LocationResult locationResult) {
+                    if (locationResult != null && locationResult.getLastLocation() != null) {
+                        // Enregistre les coordonnées dans la base de données
                         double latitude = locationResult.getLastLocation().getLatitude();
                         double longitude = locationResult.getLastLocation().getLongitude();
                         dbHelper.addPoint(currentTrajetId, latitude, longitude);
@@ -145,15 +146,14 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
     /**
      * Termine le trajet en cours et propose de créer/sauvegarder le fichier GPX
      */
     private void endTracking() {
         isTracking = false;
-
-        // Arrête le pointage périodique si mode automatique
         if (!isManualMode) {
-            handler.removeCallbacks(periodicTask);
+            handler.removeCallbacks(periodicTask); // Arrête la tâche périodique en mode automatique
         }
 
         // Réinitialise l'interface
@@ -162,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
         btnStart.setVisibility(View.VISIBLE);
         radioGroupMode.setEnabled(true);
 
-        // Demande un titre pour le fichier GPX
+        // Affiche une boîte de dialogue pour saisir le nom du fichier GPX
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Titre du fichier GPX");
         final EditText input = new EditText(this);
@@ -170,64 +170,83 @@ public class MainActivity extends AppCompatActivity {
         builder.setView(input);
         builder.setPositiveButton("OK", (dialog, which) -> {
             String titre = input.getText().toString().isEmpty() ? "voyage" : input.getText().toString();
-            createAndShareGpxFile(titre); // Crée et partage le fichier
+            createAndShareGpxFile(titre);
         });
         builder.setNegativeButton("Annuler", null);
         builder.show();
     }
+
 
     /**
      * Crée un fichier GPX et propose de le partager
      * @param titre Le nom du fichier GPX
      */
     private void createAndShareGpxFile(String titre) {
-        // Construction du contenu XML du fichier GPX
-        StringBuilder gpxContent = new StringBuilder();
-        gpxContent.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
-                .append("<gpx version=\"1.1\" creator=\"CarnetDeVoyage\">\n")
-                .append("<trk><name>").append(titre).append("</name><trkseg>\n");
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        // Requête pour récupérer les points du trajet actuel
+        Query query = db.collection("carnetdevoyage").document("data").collection("points")
+                .whereEqualTo("trajet_id", currentTrajetId)
+                .orderBy("timestamp");
 
-        // Ajout de tous les points GPS du trajet
-        for (PointGPS point : dbHelper.getPointsForTrajet(currentTrajetId)) {
-            gpxContent.append("<trkpt lat=\"").append(point.getLatitude())
-                    .append("\" lon=\"").append(point.getLongitude()).append("\">\n")
-                    .append("<time>").append(point.getTimestamp()).append("</time>\n")
-                    .append("</trkpt>\n");
-        }
-        gpxContent.append("</trkseg></trk></gpx>");
+        query.get().addOnSuccessListener(querySnapshot -> {
+            // Construit le contenu du fichier GPX
+            StringBuilder gpxContent = new StringBuilder();
+            gpxContent.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+                    .append("<gpx version=\"1.1\" creator=\"CarnetDeVoyage\">\n")
+                    .append("<trk><name>").append(titre).append("</name><trkseg>\n");
 
-        try {
-            // Utilisation de MediaStore pour écrire dans le répertoire Download
-            ContentValues values = new ContentValues();
-            values.put(MediaStore.Files.FileColumns.DISPLAY_NAME, titre + ".gpx");
-            values.put(MediaStore.Files.FileColumns.MIME_TYPE, "application/gpx+xml");
-            values.put(MediaStore.Files.FileColumns.RELATIVE_PATH, "Download/");
-            Uri uri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+            for (var doc : querySnapshot.getDocuments()) {
+                Double latitude = doc.getDouble("latitude");
+                Double longitude = doc.getDouble("longitude");
+                String timestamp = doc.getString("timestamp");
 
-            if (uri != null) {
-                // Écriture du fichier
-                try (FileOutputStream fos = (FileOutputStream) getContentResolver().openOutputStream(uri)) {
-                    assert fos != null;
-                    fos.write(gpxContent.toString().getBytes());
+                if (latitude != null && longitude != null && timestamp != null) {
+                    gpxContent.append("<trkpt lat=\"").append(latitude)
+                            .append("\" lon=\"").append(longitude).append("\">\n")
+                            .append("<time>").append(timestamp).append("</time>\n")
+                            .append("</trkpt>\n");
                 }
-
-                // Intent pour partager le fichier
-                Intent emailIntent = new Intent(Intent.ACTION_SEND);
-                emailIntent.setType("application/gpx+xml");
-                emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Fichier GPX : " + titre);
-                emailIntent.putExtra(Intent.EXTRA_STREAM, uri);
-                emailIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                startActivity(Intent.createChooser(emailIntent, "Envoyer le fichier GPX"));
             }
-        } catch (Exception e) {
-            showAlert("Erreur lors de la création ou du partage du fichier : " + e.getMessage());
-        }
+
+            gpxContent.append("</trkseg></trk></gpx>");
+
+            try {
+                // Crée un fichier GPX dans le dossier Téléchargements
+                ContentValues values = new ContentValues();
+                values.put(MediaStore.Files.FileColumns.DISPLAY_NAME, titre + ".gpx");
+                values.put(MediaStore.Files.FileColumns.MIME_TYPE, "application/gpx+xml");
+                values.put(MediaStore.Files.FileColumns.RELATIVE_PATH, "Download/");
+                Uri uri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+
+                if (uri != null) {
+                    try (FileOutputStream fos = (FileOutputStream) getContentResolver().openOutputStream(uri)) {
+                        fos.write(gpxContent.toString().getBytes());
+                    }
+
+                    // Partage le fichier GPX via mail
+                    Intent emailIntent = new Intent(Intent.ACTION_SEND);
+                    emailIntent.setType("application/gpx+xml");
+                    emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Fichier GPX : " + titre);
+                    emailIntent.putExtra(Intent.EXTRA_STREAM, uri);
+                    emailIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    startActivity(Intent.createChooser(emailIntent, "Envoyer le fichier GPX"));
+                } else {
+                    showAlert("Erreur : Impossible de créer le fichier GPX.");
+                }
+            } catch (Exception e) {
+                showAlert("Erreur lors de la création ou du partage du fichier : " + e.getMessage());
+            }
+        }).addOnFailureListener(e -> {
+            // Gestion des erreurs spécifiques de Firebase
+            if (e.getMessage().contains("FAILED_PRECONDITION")) {
+                showAlert("Erreur : Une indexation est requise. Veuillez créer un index dans la console Firebase (voir les détails dans les logs) et réessayez.");
+            } else {
+                showAlert("Erreur lors de la récupération des points : " + e.getMessage());
+            }
+        });
     }
 
-    /**
-     * Affiche une alerte avec un message
-     * @param message Le message à afficher
-     */
+    // Affiche une alerte avec un message personnalisé
     private void showAlert(String message) {
         new AlertDialog.Builder(this)
                 .setMessage(message)
