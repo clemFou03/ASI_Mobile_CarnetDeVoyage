@@ -9,9 +9,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicLong;
 
-/**
- * Classe utilitaire pour gérer les opérations de données avec Firestore dans l'application CarnetDeVoyage.
- */
+
 public class DatabaseHelper {
 
     private final FirebaseFirestore firestore;

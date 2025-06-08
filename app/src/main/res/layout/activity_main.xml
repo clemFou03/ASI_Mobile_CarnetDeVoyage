@@ -40,4 +40,10 @@
         android:layout_height="wrap_content"
         android:text="Fin"
         android:visibility="gone" />
+
+    <Button
+        android:id="@+id/btnViewTrips"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Voir les trajets" />
 </LinearLayout>
