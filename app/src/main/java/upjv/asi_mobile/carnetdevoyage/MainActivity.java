@@ -11,10 +11,7 @@ import android.os.Looper;
 import android.provider.MediaStore;
 import android.text.InputType;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
@@ -25,6 +22,10 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.radiobutton.MaterialRadioButton;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import java.io.FileOutputStream;
@@ -33,8 +34,9 @@ import java.util.Date;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
-    private RadioGroup radioGroupMode;
-    private Button btnStart, btnPoint, btnEnd, btnViewTrips;
+    private BottomNavigationView bottomNavigation;
+    private MaterialButton btnStart, btnPoint, btnEnd;
+    private MaterialRadioButton radioManual, radioAuto;
     private FusedLocationProviderClient fusedLocationClient;
     private DatabaseHelper dbHelper;
     private long currentTrajetId = -1;
@@ -43,24 +45,71 @@ public class MainActivity extends AppCompatActivity {
     private boolean isManualMode = true;
     private Handler handler;
     private Runnable periodicTask;
+    private LocationCallback locationCallback;
     private ActivityResultLauncher<String> requestPermissionLauncher;
+    private FirebaseAuth auth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Initialiser les composants UI
-        radioGroupMode = findViewById(R.id.radioGroupMode);
+        // Initialisation de Firebase et vérification de l'utilisateur connecté
+        dbHelper = new DatabaseHelper();
+        auth = FirebaseAuth.getInstance();
+
+        // Redirige vers WelcomeActivity si aucun utilisateur n'est connecté
+        if (dbHelper.getCurrentUserId() == null) {
+            Intent intent = new Intent(MainActivity.this, WelcomeActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            finish();
+            return;
+        }
+
+        // Initialisation des vues et services de localisation
+        radioManual = findViewById(R.id.radioManual);
+        radioAuto = findViewById(R.id.radioAuto);
         btnStart = findViewById(R.id.btnStart);
         btnPoint = findViewById(R.id.btnPoint);
         btnEnd = findViewById(R.id.btnEnd);
-        btnViewTrips = findViewById(R.id.btnViewTrips);
+        bottomNavigation = findViewById(R.id.bottomNavigation);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        dbHelper = new DatabaseHelper();
         handler = new Handler(Looper.getMainLooper());
 
-        // Gestionnaire de permission GPS
+        // Gestion de la navigation via BottomNavigationView
+        bottomNavigation.setOnItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.nav_home) {
+                return true;
+            } else if (itemId == R.id.nav_trips) {
+                startActivity(new Intent(MainActivity.this, TripListActivity.class));
+                return true;
+            } else if (itemId == R.id.nav_logout) {
+                // Déconnexion et retour à WelcomeActivity
+                auth.signOut();
+                Intent intent = new Intent(MainActivity.this, WelcomeActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+                finish();
+                return true;
+            }
+            return false;
+        });
+
+        // Callback pour enregistrer les positions GPS
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                if (locationResult != null && locationResult.getLastLocation() != null && isTracking) {
+                    double latitude = locationResult.getLastLocation().getLatitude();
+                    double longitude = locationResult.getLastLocation().getLongitude();
+                    dbHelper.addPoint(currentTrajetId, latitude, longitude);
+                }
+            }
+        };
+
+        // Gestion de la demande de permission GPS
         requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
             if (isGranted) {
                 showTitleDialog();
@@ -69,29 +118,35 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Bouton démarrer le suivi
+        // Bouton pour démarrer un trajet
         btnStart.setOnClickListener(v -> {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
-            } else {
-                showTitleDialog();
-            }
+            v.animate().scaleX(0.95f).scaleY(0.95f).setDuration(100).withEndAction(() -> {
+                v.animate().scaleX(1f).scaleY(1f).setDuration(100).start();
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
+                } else {
+                    showTitleDialog();
+                }
+            }).start();
         });
 
-        // Bouton pointage manuel
         btnPoint.setOnClickListener(v -> saveCurrentLocation());
-
-        // Bouton arrêter le suivi
         btnEnd.setOnClickListener(v -> endTracking());
-
-        // Bouton voir les trajets
-        btnViewTrips.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, TripListActivity.class);
-            startActivity(intent);
-        });
     }
 
-    // Afficher onglet pour le titre du trajet
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Nettoyage des callbacks de localisation
+        if (locationCallback != null) {
+            fusedLocationClient.removeLocationUpdates(locationCallback);
+        }
+        if (handler != null && periodicTask != null) {
+            handler.removeCallbacks(periodicTask);
+        }
+    }
+
+    // Affiche un dialogue pour entrer le titre du trajet
     private void showTitleDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Titre du trajet");
@@ -111,14 +166,15 @@ public class MainActivity extends AppCompatActivity {
         builder.show();
     }
 
-    // Démarrer le suivi avec le titre
+    // Démarre le suivi du trajet (manuel ou auto)
     private void startTracking(String titre) {
-        isManualMode = ((RadioButton) findViewById(radioGroupMode.getCheckedRadioButtonId())).getText().toString().equals("Pointage manuel");
+        isManualMode = radioManual.isChecked();
         isTracking = true;
-        radioGroupMode.setEnabled(false);
+        radioManual.setEnabled(false);
+        radioAuto.setEnabled(false);
         btnStart.setVisibility(View.GONE);
         btnEnd.setVisibility(View.VISIBLE);
-        btnViewTrips.setEnabled(false);
+        bottomNavigation.setEnabled(false);
         if (isManualMode) {
             btnPoint.setVisibility(View.VISIBLE);
         } else {
@@ -126,7 +182,9 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     saveCurrentLocation();
-                    handler.postDelayed(this, 5 * 60 * 1000);
+                    if (isTracking) {
+                        handler.postDelayed(this, 5 * 60 * 1000); // Enregistrement toutes les 5 minutes
+                    }
                 }
             };
             handler.post(periodicTask);
@@ -134,8 +192,10 @@ public class MainActivity extends AppCompatActivity {
         currentTrajetId = dbHelper.addTrajet(titre);
     }
 
-    // Enregistrer la position actuelle
+    // Enregistre la position actuelle
     private void saveCurrentLocation() {
+        if (!isTracking || currentTrajetId == -1) return;
+
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             showAlert("Permission GPS non accordée. Impossible d'enregistrer la position.");
             return;
@@ -143,39 +203,34 @@ public class MainActivity extends AppCompatActivity {
 
         LocationRequest locationRequest = LocationRequest.create()
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                .setNumUpdates(1)
                 .setInterval(10000);
 
         try {
-            fusedLocationClient.requestLocationUpdates(locationRequest, new LocationCallback() {
-                @Override
-                public void onLocationResult(LocationResult locationResult) {
-                    if (locationResult != null && locationResult.getLastLocation() != null) {
-                        double latitude = locationResult.getLastLocation().getLatitude();
-                        double longitude = locationResult.getLastLocation().getLongitude();
-                        dbHelper.addPoint(currentTrajetId, latitude, longitude);
-                    }
-                }
-            }, Looper.getMainLooper());
+            fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
         } catch (SecurityException e) {
             showAlert("Erreur de permission GPS : " + e.getMessage());
         }
     }
 
-    // Arrêter le suivi
+    // Arrête le suivi et génère le fichier GPX
     private void endTracking() {
         isTracking = false;
         if (!isManualMode) {
             handler.removeCallbacks(periodicTask);
         }
+        fusedLocationClient.removeLocationUpdates(locationCallback);
         btnPoint.setVisibility(View.GONE);
         btnEnd.setVisibility(View.GONE);
         btnStart.setVisibility(View.VISIBLE);
-        btnViewTrips.setEnabled(true);
-        radioGroupMode.setEnabled(true);
+        radioManual.setEnabled(true);
+        radioAuto.setEnabled(true);
+        bottomNavigation.setEnabled(true);
         createAndShareGpxFile(currentTrajetTitre);
+        currentTrajetId = -1;
     }
 
-    // Créer et partager le fichier GPX
+    // Crée et partage un fichier GPX avec les points du trajet
     private void createAndShareGpxFile(String titre) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         Query query = db.collection("carnetdevoyage").document("data").collection("points")
@@ -227,14 +282,14 @@ public class MainActivity extends AppCompatActivity {
             }
         }).addOnFailureListener(e -> {
             if (e.getMessage().contains("FAILED_PRECONDITION")) {
-                showAlert("Erreur : Une indexation est requise. Veuillez créer un index dans la console Firebase.");
+                showAlert("Erreur : Une indexation est requise. Veuillez créer un index dans la console Firebase avec les champs 'trajet_id' et 'timestamp'.");
             } else {
                 showAlert("Erreur lors de la récupération des points : " + e.getMessage());
             }
         });
     }
 
-    // Afficher une alerte
+    // Affiche une alerte avec un message
     private void showAlert(String message) {
         new AlertDialog.Builder(this)
                 .setMessage(message)
