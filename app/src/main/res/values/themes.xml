@@ -1,34 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme -->
     <style name="Theme.CarnetDeVoyage" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Primary brand color -->
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryVariant">@color/primary_variant</item>
-        <item name="colorOnPrimary">@color/on_primary</item>
-        <!-- Secondary brand color -->
-        <item name="colorSecondary">@color/secondary</item>
-        <item name="colorSecondaryVariant">@color/secondary_variant</item>
-        <item name="colorOnSecondary">@color/on_secondary</item>
-        <!-- Background and surface -->
-        <item name="android:background">@color/background</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/accent_point</item>
+        <item name="colorSecondaryVariant">@color/accent_end</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="android:background">@color/surface</item>
         <item name="colorSurface">@color/surface</item>
         <item name="colorOnSurface">@color/on_surface</item>
-        <!-- Error color -->
-        <item name="colorError">#D32F2F</item>
-        <!-- Status bar -->
+        <item name="colorError">@color/accent_end</item>
         <item name="android:statusBarColor">?attr/colorSurface</item>
         <item name="android:windowLightStatusBar">true</item>
     </style>
-
-    <!-- Define colors -->
-    <color name="primary">#2E7D32</color>
-    <color name="primary_variant">#1B5E20</color>
-    <color name="on_primary">#FFFFFF</color>
-    <color name="secondary">#FF6F00</color>
-    <color name="secondary_variant">#E65100</color>
-    <color name="on_secondary">#FFFFFF</color>
-    <color name="background">#F5F5F5</color>
-    <color name="surface">#FFFFFF</color>
-    <color name="on_surface">#212121</color>
 </resources>

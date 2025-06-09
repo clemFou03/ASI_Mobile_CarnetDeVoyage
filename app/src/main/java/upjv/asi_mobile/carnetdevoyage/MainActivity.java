@@ -44,7 +44,6 @@ public class MainActivity extends AppCompatActivity {
     private boolean isTracking = false;
     private boolean isManualMode = true;
     private Handler handler;
-    private Runnable periodicTask;
     private LocationCallback locationCallback;
     private ActivityResultLauncher<String> requestPermissionLauncher;
     private FirebaseAuth auth;
@@ -141,9 +140,6 @@ public class MainActivity extends AppCompatActivity {
         if (locationCallback != null) {
             fusedLocationClient.removeLocationUpdates(locationCallback);
         }
-        if (handler != null && periodicTask != null) {
-            handler.removeCallbacks(periodicTask);
-        }
     }
 
     // Affiche un dialogue pour entrer le titre du trajet
@@ -175,24 +171,28 @@ public class MainActivity extends AppCompatActivity {
         btnStart.setVisibility(View.GONE);
         btnEnd.setVisibility(View.VISIBLE);
         bottomNavigation.setEnabled(false);
+
+        // Création du trajet dans Firestore
+        currentTrajetId = dbHelper.addTrajet(titre);
+
         if (isManualMode) {
+            // Mode manuel : affiche le bouton de pointage
             btnPoint.setVisibility(View.VISIBLE);
         } else {
-            periodicTask = new Runnable() {
-                @Override
-                public void run() {
-                    saveCurrentLocation();
-                    if (isTracking) {
-                        handler.postDelayed(this, 5 * 60 * 1000); // Enregistrement toutes les 5 minutes
-                    }
-                }
-            };
-            handler.post(periodicTask);
+            // Mode automatique : configure les mises à jour continues
+            LocationRequest locationRequest = LocationRequest.create()
+                    .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                    .setInterval(5 * 60 * 1000) // Mise à jour toutes les 5 minutes
+                    .setFastestInterval(2 * 60 * 1000); // Intervalle minimum
+            try {
+                fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
+            } catch (SecurityException e) {
+                showAlert("Erreur de permission GPS : " + e.getMessage());
+            }
         }
-        currentTrajetId = dbHelper.addTrajet(titre);
     }
 
-    // Enregistre la position actuelle
+    // Enregistre la position actuelle (pour mode manuel)
     private void saveCurrentLocation() {
         if (!isTracking || currentTrajetId == -1) return;
 
@@ -216,9 +216,7 @@ public class MainActivity extends AppCompatActivity {
     // Arrête le suivi et génère le fichier GPX
     private void endTracking() {
         isTracking = false;
-        if (!isManualMode) {
-            handler.removeCallbacks(periodicTask);
-        }
+        // Arrête les mises à jour de localisation
         fusedLocationClient.removeLocationUpdates(locationCallback);
         btnPoint.setVisibility(View.GONE);
         btnEnd.setVisibility(View.GONE);
