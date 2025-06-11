@@ -21,12 +21,11 @@ public class MapActivity extends AppCompatActivity {
     private MapView mapView;
     private MaterialButton btnBack;
     private FirebaseFirestore db;
-    private long trajetId;
+    private String trajetId; // Changé de long à String
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Initialisation de la configuration OSMDroid
         Configuration.getInstance().load(this, PreferenceManager.getDefaultSharedPreferences(this));
         setContentView(R.layout.activity_map);
 
@@ -36,8 +35,8 @@ public class MapActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
 
         // Récupération de l'ID du trajet depuis l'intent
-        trajetId = getIntent().getLongExtra("trajetId", -1);
-        if (trajetId == -1) {
+        trajetId = getIntent().getStringExtra("trajetId"); // Changé de getLongExtra
+        if (trajetId == null || trajetId.isEmpty()) {
             showError("Trajet ID non valide.");
             finish();
             return;
@@ -76,34 +75,26 @@ public class MapActivity extends AppCompatActivity {
                         }
                     }
                     if (!points.isEmpty()) {
-                        // Dessine la polyligne pour tous les points
                         Polyline polyline = new Polyline();
                         polyline.setPoints(points);
                         polyline.setColor(ContextCompat.getColor(this, android.R.color.holo_blue_dark));
                         polyline.setWidth(5f);
                         mapView.getOverlays().add(polyline);
 
-                        // Ajoute un marqueur pour le point de départ
                         Marker startMarker = new Marker(mapView);
                         startMarker.setPosition(points.get(0));
                         startMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
                         startMarker.setTitle("Début du trajet");
-                        // Optional: Set custom icon for start marker
-                        // startMarker.setIcon(ContextCompat.getDrawable(this, R.drawable.ic_start_marker));
                         mapView.getOverlays().add(startMarker);
 
-                        // Ajoute un marqueur pour le point d'arrivée (si plusieurs points)
                         if (points.size() > 1) {
                             Marker endMarker = new Marker(mapView);
                             endMarker.setPosition(points.get(points.size() - 1));
                             endMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
                             endMarker.setTitle("Fin du trajet");
-                            // Optional: Set custom icon for end marker
-                            // endMarker.setIcon(ContextCompat.getDrawable(this, R.drawable.ic_end_marker));
                             mapView.getOverlays().add(endMarker);
                         }
 
-                        // Centre la carte sur le premier point
                         mapView.getController().setCenter(points.get(0));
                         mapView.invalidate();
                     } else {
@@ -124,14 +115,12 @@ public class MapActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Reprise de la carte
         mapView.onResume();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        // Mise en pause de la carte
         mapView.onPause();
     }
 }

@@ -59,7 +59,6 @@ public class TripListActivity extends AppCompatActivity {
             builder.setView(input);
             builder.setPositiveButton("OK", (dialog, which) -> {
                 String username = input.getText().toString().trim();
-                // Vérification du champ vide
                 if (username.isEmpty()) {
                     new AlertDialog.Builder(this)
                             .setMessage("Veuillez entrer un nom d'utilisateur.")
@@ -67,7 +66,6 @@ public class TripListActivity extends AppCompatActivity {
                             .show();
                     return;
                 }
-                // Recherche de l'ID utilisateur et chargement de ses trajets
                 dbHelper.getUserIdByUsername(username, (userId, error) -> {
                     if (userId != null) {
                         loadTrips(userId);
@@ -96,11 +94,12 @@ public class TripListActivity extends AppCompatActivity {
                     trajets.clear();
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                         String titre = document.getString("titre");
-                        String id = document.getId().replace("trajet_", "");
-                        trajets.add(new Trajet(Long.parseLong(id), titre));
+                        String trajetId = document.getString("trajet_id"); // Récupère trajet_id
+                        if (trajetId != null) {
+                            trajets.add(new Trajet(trajetId, titre));
+                        }
                     }
                     adapter.notifyDataSetChanged();
-                    // Affiche un message si aucun trajet n'est trouvé
                     if (trajets.isEmpty()) {
                         new AlertDialog.Builder(this)
                                 .setMessage(userId == null ? "Aucun trajet trouvé pour vous." : "Aucun trajet trouvé pour cet utilisateur.")
@@ -134,7 +133,6 @@ public class TripListActivity extends AppCompatActivity {
         public void onBindViewHolder(ViewHolder holder, int position) {
             Trajet trajet = trajets.get(position);
             holder.textView.setText(trajet.getTitre());
-            // Ouvre MapActivity pour le trajet sélectionné
             holder.itemView.setOnClickListener(v -> {
                 Intent intent = new Intent(TripListActivity.this, MapActivity.class);
                 intent.putExtra("trajetId", trajet.getId());
@@ -147,7 +145,6 @@ public class TripListActivity extends AppCompatActivity {
             return trajets.size();
         }
 
-        // Vue pour chaque élément de la liste
         class ViewHolder extends RecyclerView.ViewHolder {
             TextView textView;
 

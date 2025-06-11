@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
     private MaterialRadioButton radioManual, radioAuto;
     private FusedLocationProviderClient fusedLocationClient;
     private DatabaseHelper dbHelper;
-    private long currentTrajetId = -1;
+    private String currentTrajetId = null; // Changé de long à String
     private String currentTrajetTitre = "";
     private boolean isTracking = false;
     private boolean isManualMode = true;
@@ -85,7 +85,6 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(MainActivity.this, TripListActivity.class));
                 return true;
             } else if (itemId == R.id.nav_logout) {
-                // Déconnexion et retour à WelcomeActivity
                 auth.signOut();
                 Intent intent = new Intent(MainActivity.this, WelcomeActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -136,7 +135,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // Nettoyage des callbacks de localisation
         if (locationCallback != null) {
             fusedLocationClient.removeLocationUpdates(locationCallback);
         }
@@ -176,14 +174,12 @@ public class MainActivity extends AppCompatActivity {
         currentTrajetId = dbHelper.addTrajet(titre);
 
         if (isManualMode) {
-            // Mode manuel : affiche le bouton de pointage
             btnPoint.setVisibility(View.VISIBLE);
         } else {
-            // Mode automatique : configure les mises à jour continues
             LocationRequest locationRequest = LocationRequest.create()
                     .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-                    .setInterval(5 * 60 * 1000) // Mise à jour toutes les 5 minutes
-                    .setFastestInterval(2 * 60 * 1000); // Intervalle minimum
+                    .setInterval(5 * 60 * 1000)
+                    .setFastestInterval(2 * 60 * 1000);
             try {
                 fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
             } catch (SecurityException e) {
@@ -194,7 +190,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Enregistre la position actuelle (pour mode manuel)
     private void saveCurrentLocation() {
-        if (!isTracking || currentTrajetId == -1) return;
+        if (!isTracking || currentTrajetId == null) return;
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             showAlert("Permission GPS non accordée. Impossible d'enregistrer la position.");
@@ -216,7 +212,6 @@ public class MainActivity extends AppCompatActivity {
     // Arrête le suivi et génère le fichier GPX
     private void endTracking() {
         isTracking = false;
-        // Arrête les mises à jour de localisation
         fusedLocationClient.removeLocationUpdates(locationCallback);
         btnPoint.setVisibility(View.GONE);
         btnEnd.setVisibility(View.GONE);
@@ -225,7 +220,7 @@ public class MainActivity extends AppCompatActivity {
         radioAuto.setEnabled(true);
         bottomNavigation.setEnabled(true);
         createAndShareGpxFile(currentTrajetTitre);
-        currentTrajetId = -1;
+        currentTrajetId = null; // Réinitialise à null
     }
 
     // Crée et partage un fichier GPX avec les points du trajet
