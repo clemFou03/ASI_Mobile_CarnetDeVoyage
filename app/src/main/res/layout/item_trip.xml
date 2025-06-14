@@ -48,7 +48,7 @@
                 android:id="@android:id/text1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Titre du trajet"
+                android:text="@string/itemtrip_txt_titre_trajet"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:textColor="@color/on_surface"

@@ -25,5 +25,5 @@ firebase-firestore = { module = "com.google.firebase:firebase-firestore", versio
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebase-auth" } # Added Firestore
 
 [plugins]
-android-application = { id = "com.android.application", version = "8.7.0" }
+android-application = { id = "com.android.application", version = "8.9.2" }
 google-services = { id = "com.google.gms.google-services", version = "4.4.2" }
