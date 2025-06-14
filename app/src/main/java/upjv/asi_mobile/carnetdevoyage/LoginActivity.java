@@ -4,16 +4,18 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+
 import com.google.android.material.textfield.TextInputEditText;
+
+import java.util.Objects;
 
 public class LoginActivity extends AppCompatActivity {
     private TextInputEditText etIdentifier, etPassword;
-    private Button btnLogin;
-    private TextView tvMessage, tvGoToRegister;
+    private TextView tvMessage;
     private DatabaseHelper dbHelper;
 
     @Override
@@ -24,9 +26,9 @@ public class LoginActivity extends AppCompatActivity {
         // Initialisation des vues et de l'aide à la base de données
         etIdentifier = findViewById(R.id.etIdentifier);
         etPassword = findViewById(R.id.etPassword);
-        btnLogin = findViewById(R.id.btnLogin);
+        Button btnLogin = findViewById(R.id.btnLogin);
         tvMessage = findViewById(R.id.tvMessage);
-        tvGoToRegister = findViewById(R.id.tvGoToRegister);
+        TextView tvGoToRegister = findViewById(R.id.tvGoToRegister);
         dbHelper = new DatabaseHelper();
 
         // Redirection vers l'écran d'inscription
@@ -37,19 +39,19 @@ public class LoginActivity extends AppCompatActivity {
 
         // Gestion de la connexion
         btnLogin.setOnClickListener(v -> {
-            String identifier = etIdentifier.getText().toString().trim();
-            String password = etPassword.getText().toString().trim();
+            String identifier = Objects.requireNonNull(etIdentifier.getText()).toString().trim();
+            String password = Objects.requireNonNull(etPassword.getText()).toString().trim();
             // Vérification des champs vides
             if (identifier.isEmpty() || password.isEmpty()) {
-                tvMessage.setText("Veuillez remplir tous les champs.");
-                tvMessage.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
+                tvMessage.setText(R.string.login_txt_champs_vide);
+                tvMessage.setTextColor(ContextCompat.getColor(this,android.R.color.holo_red_dark));
                 return;
             }
             // Appel à la méthode de connexion
             dbHelper.loginUser(identifier, password, (success, message) -> {
                 if (success) {
                     tvMessage.setText(message);
-                    tvMessage.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
+                    tvMessage.setTextColor(ContextCompat.getColor(this,android.R.color.holo_green_dark));
                     // Redirection vers MainActivity après un délai
                     new Handler(Looper.getMainLooper()).postDelayed(() -> {
                         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
@@ -58,7 +60,7 @@ public class LoginActivity extends AppCompatActivity {
                     }, 1000);
                 } else {
                     tvMessage.setText(message);
-                    tvMessage.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
+                    tvMessage.setTextColor(ContextCompat.getColor(this,android.R.color.holo_red_dark));
                 }
             });
         });

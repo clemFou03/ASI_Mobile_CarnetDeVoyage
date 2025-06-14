@@ -1,7 +1,7 @@
 package upjv.asi_mobile.carnetdevoyage;
 
+import android.content.Context;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -19,19 +19,18 @@ import java.util.List;
 
 public class MapActivity extends AppCompatActivity {
     private MapView mapView;
-    private MaterialButton btnBack;
     private FirebaseFirestore db;
     private String trajetId; // Changé de long à String
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Configuration.getInstance().load(this, PreferenceManager.getDefaultSharedPreferences(this));
+        Configuration.getInstance().load(this, getSharedPreferences("osmdroid", Context.MODE_PRIVATE));
         setContentView(R.layout.activity_map);
 
         // Initialisation des vues et de Firestore
         mapView = findViewById(R.id.mapView);
-        btnBack = findViewById(R.id.btnBack);
+        MaterialButton btnBack = findViewById(R.id.btnBack);
         db = FirebaseFirestore.getInstance();
 
         // Récupération de l'ID du trajet depuis l'intent
@@ -69,7 +68,7 @@ public class MapActivity extends AppCompatActivity {
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                         Double latitude = document.getDouble("latitude");
                         Double longitude = document.getDouble("longitude");
-                        String timestamp = document.getString("timestamp");
+                        //String timestamp = document.getString("timestamp");
                         if (latitude != null && longitude != null) {
                             points.add(new GeoPoint(latitude, longitude));
                         }

@@ -84,15 +84,17 @@ public class DatabaseHelper {
         return trajetId;
     }
 
-    // Ajoute un point GPS à Firestore
-    public void addPoint(String trajetId, double latitude, double longitude) {
+    // Ajoute un point GPS à Firestore avec callback
+    public void addPoint(String trajetId, double latitude, double longitude, PointCallback callback) {
         String pointDocId = pointsRef.document().getId();
         HashMap<String, Object> pointData = new HashMap<>();
         pointData.put("trajet_id", trajetId);
         pointData.put("latitude", latitude);
         pointData.put("longitude", longitude);
         pointData.put("timestamp", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date()));
-        pointsRef.document(pointDocId).set(pointData);
+        pointsRef.document(pointDocId).set(pointData)
+                .addOnSuccessListener(aVoid -> callback.onResult(true))
+                .addOnFailureListener(e -> callback.onResult(false));
     }
 
     // Interface pour les callbacks d'inscription/connexion
@@ -103,5 +105,10 @@ public class DatabaseHelper {
     // Interface pour les callbacks de recherche d'utilisateur
     public interface UserCallback {
         void onResult(String userId, String error);
+    }
+
+    // Interface pour les callbacks d'ajout de point
+    public interface PointCallback {
+        void onResult(boolean success);
     }
 }

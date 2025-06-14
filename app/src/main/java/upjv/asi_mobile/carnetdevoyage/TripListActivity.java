@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -24,11 +25,7 @@ import java.util.List;
 import upjv.asi_mobile.carnetdevoyage.model.Trajet;
 
 public class TripListActivity extends AppCompatActivity {
-    private RecyclerView recyclerView;
-    private MaterialButton btnBack;
-    private FloatingActionButton btnViewOtherUser;
     private FirebaseFirestore db;
-    private List<Trajet> trajets;
     private TripAdapter adapter;
     private DatabaseHelper dbHelper;
 
@@ -38,12 +35,12 @@ public class TripListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_trip_list);
 
         // Initialisation des vues, Firestore et de l'adaptateur
-        recyclerView = findViewById(R.id.tripListView);
-        btnBack = findViewById(R.id.btnBack);
-        btnViewOtherUser = findViewById(R.id.btnViewOtherUser);
+        RecyclerView recyclerView = findViewById(R.id.tripListView);
+        MaterialButton btnBack = findViewById(R.id.btnBack);
+        FloatingActionButton btnViewOtherUser = findViewById(R.id.btnViewOtherUser);
         db = FirebaseFirestore.getInstance();
         dbHelper = new DatabaseHelper();
-        trajets = new ArrayList<>();
+        List<Trajet> trajets = new ArrayList<>();
         adapter = new TripAdapter(trajets);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
@@ -93,38 +90,43 @@ public class TripListActivity extends AppCompatActivity {
                 .whereEqualTo("userId", userId != null ? userId : dbHelper.getCurrentUserId())
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    trajets.clear();
+                    List<Trajet> newTrajets = new ArrayList<>();
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                         String titre = document.getString("titre");
-                        String trajetId = document.getString("trajet_id"); // Récupère trajet_id
+                        String trajetId = document.getString("trajet_id");
                         if (trajetId != null) {
-                            trajets.add(new Trajet(trajetId, titre));
+                            newTrajets.add(new Trajet(trajetId, titre));
                         }
                     }
-                    adapter.notifyDataSetChanged();
-                    if (trajets.isEmpty()) {
+                    adapter.setTrajets(newTrajets);
+                    if (newTrajets.isEmpty()) {
                         new AlertDialog.Builder(this)
                                 .setMessage(userId == null ? "Aucun trajet trouvé pour vous." : "Aucun trajet trouvé pour cet utilisateur.")
                                 .setPositiveButton("OK", null)
                                 .show();
                     }
                 })
-                .addOnFailureListener(e -> {
-                    new AlertDialog.Builder(this)
-                            .setMessage("Erreur lors du chargement des trajets : " + e.getMessage())
-                            .setPositiveButton("OK", null)
-                            .show();
-                });
+                .addOnFailureListener(e -> new AlertDialog.Builder(this)
+                        .setMessage("Erreur lors du chargement des trajets : " + e.getMessage())
+                        .setPositiveButton("OK", null)
+                        .show());
     }
 
     // Adaptateur pour afficher la liste des trajets
     private class TripAdapter extends RecyclerView.Adapter<TripAdapter.ViewHolder> {
-        private List<Trajet> trajets;
+        private final List<Trajet> trajets;
 
         TripAdapter(List<Trajet> trajets) {
             this.trajets = trajets;
         }
 
+        public void setTrajets(List<Trajet> newTrajets) {
+            trajets.clear();
+            trajets.addAll(newTrajets);
+            notifyItemRangeChanged(0, trajets.size());
+        }
+
+        @NonNull
         @Override
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_trip, parent, false);
