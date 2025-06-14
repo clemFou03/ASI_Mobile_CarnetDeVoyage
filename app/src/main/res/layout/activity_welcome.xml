@@ -12,6 +12,7 @@
         android:id="@+id/logoImage"
         android:layout_width="120dp"
         android:layout_height="120dp"
+        android:contentDescription="@string/welcome_description_logo_appli"
         android:padding="12dp"
         android:scaleType="centerCrop"
         android:src="@drawable/ic_logo"
