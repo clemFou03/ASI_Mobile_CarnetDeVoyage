@@ -1,9 +1,13 @@
 package upjv.asi_mobile.carnetdevoyage;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Looper;
@@ -49,6 +53,8 @@ public class MainActivity extends AppCompatActivity {
     private LocationCallback locationCallback;
     private ActivityResultLauncher<String> requestPermissionLauncher;
     private FirebaseAuth auth;
+    private BroadcastReceiver gpsSwitchReceiver;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,7 +106,19 @@ public class MainActivity extends AppCompatActivity {
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(@NonNull LocationResult locationResult) {
-                if (locationResult.getLastLocation() != null && isTracking) {
+                if (!isTracking) return;
+
+                // Vérifie si la permission GPS a été retirée
+                if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    // Arrête immédiatement le tracking
+                    Toast.makeText(MainActivity.this, R.string.trajet_stopped_no_permission, Toast.LENGTH_LONG).show();
+                    endTracking();
+                    return;
+                }
+
+                // Si la localisation est toujours disponible, on continue normalement
+                if (locationResult.getLastLocation() != null) {
                     double latitude = locationResult.getLastLocation().getLatitude();
                     double longitude = locationResult.getLastLocation().getLongitude();
                     dbHelper.addPoint(currentTrajetId, latitude, longitude, (success) -> {
@@ -135,6 +153,34 @@ public class MainActivity extends AppCompatActivity {
 
         btnPoint.setOnClickListener(v -> saveCurrentLocation());
         btnEnd.setOnClickListener(v -> endTracking());
+
+        // Détecte les changements dans l'état du GPS
+        gpsSwitchReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (intent.getAction() != null && intent.getAction().matches(LocationManager.PROVIDERS_CHANGED_ACTION)) {
+                    LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+                    boolean isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+
+                    if (!isGpsEnabled && isTracking) {
+                        Toast.makeText(MainActivity.this, R.string.trajet_stopped_no_permission, Toast.LENGTH_LONG).show();
+                        completeTrackingCleanup();
+                    }
+                }
+            }
+        };
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(gpsSwitchReceiver, new IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION));
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(gpsSwitchReceiver);
     }
 
     @Override
