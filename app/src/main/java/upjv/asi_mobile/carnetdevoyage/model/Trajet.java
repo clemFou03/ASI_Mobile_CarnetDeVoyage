@@ -1,4 +1,4 @@
-package upjv.asi_mobile.carnetdevoyage;
+package upjv.asi_mobile.carnetdevoyage.model;
 
 import java.util.ArrayList;
 import java.util.List;
