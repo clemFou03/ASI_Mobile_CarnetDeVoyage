@@ -1,4 +1,4 @@
-package upjv.asi_mobile.carnetdevoyage;
+package upjv.asi_mobile.carnetdevoyage.model;
 
 public class PointGPS {
     private final long id;

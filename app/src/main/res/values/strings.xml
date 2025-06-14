@@ -1,3 +1,49 @@
 <resources>
     <string name="app_name">CarnetDeVoyage</string>
+
+    <!-- map -->
+    <string name="map_retour">Retour</string>
+
+    <!-- login -->
+    <string name="login_description_logo_appli">Logo appli</string>
+    <string name="login_txt_connexion">Connexion</string>
+    <string name="login_txt_email">Email</string>
+    <string name="login_mdp">Mot de passe</string>
+    <string name="login_btn_connexion">Connexion</string>
+    <string name="login_txt_lien_vers_inscription">Pas de compte ? Inscrivez-vous</string>
+
+    <!-- main -->
+    <string name="main_description_logo">Logo de Carnet de Voyage</string>
+    <string name="main_txt_header">Carnet de Voyage</string>
+    <string name="main_txt_pointage_manuel">Pointage manuel</string>
+    <string name="main_txt_pointage_automatique">Pointage automatique</string>
+    <string name="main_txt_btn_depart">Départ</string>
+    <string name="main_txt_btn_pointage">Pointage</string>
+    <string name="main_txt_btn_arrivee">Arrivée</string>
+
+    <!-- register -->
+    <string name="register_description_logo_appli">Logo de l\'application d\'inscription</string>
+    <string name="register_titre_formulaire_inscription">Inscription</string>
+    <string name="register_txt_textfield_email">Email</string>
+    <string name="register_txt_textfield_nom_utilisateur">Nom d\'utilisateur</string>
+    <string name="register_txt_textfield_mdp">Mot de passe</string>
+    <string name="register_txt_btn_inscription">Inscription</string>
+    <string name="register_txt_lien_vers_connection">Déjà un compte ? Connectez-vous</string>
+
+    <!-- trip_list -->
+    <string name="triplist_description_logo_appli">Logo de l\'application Liste des Trajets</string>
+    <string name="triplist_txt_header">Liste des Trajets</string>
+    <string name="triplist_description_btn_voir_autre_utilisateur">Voir autre utilisateur</string>
+    <string name="triplist_txt_btn_retour">Retour</string>
+    <string name="triplist_description_liste">Liste de vos trajets</string>
+
+    <!-- welcome -->
+    <string name="welcome_description_logo_appli">Logo appli</string>
+    <string name="welcome_titre">Que souhaitez-vous ?</string>
+    <string name="welcome_txt_btn_connexion">Connexion</string>
+    <string name="welcome_txt_btn_inscription">Inscription</string>
+
+    <!-- item_trip -->
+    <string name="itemtrip_txt_titre_trajet">Titre du trajet</string>
+    <string name="itemtrip_description_icone_trajet">Icône de trajet</string>
 </resources>

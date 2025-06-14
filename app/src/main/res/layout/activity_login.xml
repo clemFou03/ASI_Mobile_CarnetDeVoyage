@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/surface"
@@ -13,6 +14,7 @@
         android:layout_width="120dp"
         android:layout_height="120dp"
         android:layout_marginTop="24dp"
+        android:contentDescription="@string/login_description_logo_appli"
         android:padding="12dp"
         android:src="@drawable/ic_logo"
         android:scaleType="centerCrop"
@@ -47,7 +49,7 @@
                 android:id="@+id/tvTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Connexion"
+                android:text="@string/login_txt_connexion"
                 android:textSize="28sp"
                 android:textStyle="bold"
                 android:textColor="@color/primary"
@@ -78,7 +80,7 @@
                     android:id="@+id/etIdentifier"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Email ou Nom d'utilisateur"
+                    android:hint="@string/login_txt_email"
                     android:inputType="text"
                     android:textColor="@color/on_surface"
                     android:textColorHint="@color/primary_variant" />
@@ -96,13 +98,14 @@
                 app:layout_constraintTop_toBottomOf="@id/tilIdentifier"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                tools:ignore="PrivateResource">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etPassword"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Mot de passe"
+                    android:hint="@string/login_mdp"
                     android:inputType="textPassword"
                     android:textColor="@color/on_surface"
                     android:textColorHint="@color/primary_variant" />
@@ -113,7 +116,7 @@
                 android:id="@+id/btnLogin"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Connexion"
+                android:text="@string/login_btn_connexion"
                 android:textSize="16sp"
                 android:padding="16dp"
                 android:layout_marginTop="32dp"
@@ -146,7 +149,7 @@
                 android:id="@+id/tvGoToRegister"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Pas de compte ? Inscrivez-vous"
+                android:text="@string/login_txt_lien_vers_inscription"
                 android:textSize="14sp"
                 android:textColor="@color/primary"
                 android:layout_marginTop="16dp"

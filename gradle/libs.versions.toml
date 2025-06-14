@@ -8,7 +8,8 @@ ext-junit = "1.2.1"
 espresso-core = "3.6.1"
 core = "1.13.1"
 play-services-location = "21.3.0"
-firebase-firestore = "25.1.0" # Added Firestore version
+firebase-firestore = "25.1.0"
+firebase-auth = "23.2.1" # Added Firestore version
 
 [libraries]
 appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
@@ -20,8 +21,9 @@ ext-junit = { module = "androidx.test.ext:junit", version.ref = "ext-junit" }
 espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "espresso-core" }
 core = { module = "androidx.core:core", version.ref = "core" }
 play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "play-services-location" }
-firebase-firestore = { module = "com.google.firebase:firebase-firestore", version.ref = "firebase-firestore" } # Added Firestore
+firebase-firestore = { module = "com.google.firebase:firebase-firestore", version.ref = "firebase-firestore" }
+firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebase-auth" } # Added Firestore
 
 [plugins]
-android-application = { id = "com.android.application", version = "8.7.0" }
+android-application = { id = "com.android.application", version = "8.9.2" }
 google-services = { id = "com.google.gms.google-services", version = "4.4.2" }

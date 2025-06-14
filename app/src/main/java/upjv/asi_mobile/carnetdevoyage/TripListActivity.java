@@ -21,6 +21,8 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 import java.util.List;
 
+import upjv.asi_mobile.carnetdevoyage.model.Trajet;
+
 public class TripListActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private MaterialButton btnBack;

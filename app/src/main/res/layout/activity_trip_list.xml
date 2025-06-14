@@ -37,13 +37,13 @@
                 android:transitionName="logo_transition"
                 android:clickable="true"
                 android:focusable="true"
-                android:contentDescription="Logo de l'application Liste des Trajets" />
+                android:contentDescription="@string/triplist_description_logo_appli" />
 
             <!-- Titre avec police système -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Liste des Trajets"
+                android:text="@string/triplist_txt_header"
                 android:textSize="28sp"
                 android:textStyle="bold"
                 android:textColor="@android:color/white"
@@ -78,7 +78,8 @@
             android:padding="8dp"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             android:clipToPadding="false"
-            android:scrollbars="vertical" />
+            android:scrollbars="vertical"
+            android:contentDescription="@string/triplist_description_liste" />
 
     </com.google.android.material.card.MaterialCardView>
 
@@ -87,7 +88,7 @@
         android:id="@+id/btnViewOtherUser"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:contentDescription="Voir autre utilisateur"
+        android:contentDescription="@string/triplist_description_btn_voir_autre_utilisateur"
         app:srcCompat="@drawable/ic_person"
         app:backgroundTint="@color/primary"
         app:tint="@android:color/white"
@@ -103,7 +104,7 @@
         android:id="@+id/btnBack"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Retour"
+        android:text="@string/triplist_txt_btn_retour"
         android:textSize="16sp"
         android:padding="16dp"
         android:drawableStart="@drawable/ic_arrow_back"
