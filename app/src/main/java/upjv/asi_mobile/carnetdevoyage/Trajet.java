@@ -1,15 +1,14 @@
-package upjv.asi_mobile.carnetdevoyage;;
+package upjv.asi_mobile.carnetdevoyage;
 
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class Trajet {
-    private long id;
-    private String titre;
-    private List<PointGPS> points;
+    private final String id;
+    private final String titre;
+    private final List<PointGPS> points;
 
-    public Trajet(long id, String titre) {
+    public Trajet(String id, String titre) {
         this.id = id;
         this.titre = titre;
         this.points = new ArrayList<>();
@@ -19,8 +18,7 @@ public class Trajet {
         points.add(point);
     }
 
-
-    public long getId() { return id; }
+    public String getId() { return id; }
     public String getTitre() { return titre; }
     public List<PointGPS> getPoints() { return points; }
 }

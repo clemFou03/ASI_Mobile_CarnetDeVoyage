@@ -1,22 +1,27 @@
 [versions]
-agp = "8.8.0"
-junit = "4.13.2"
-junitVersion = "1.2.1"
-espressoCore = "3.6.1"
 appcompat = "1.7.0"
 material = "1.12.0"
-activity = "1.10.1"
-constraintlayout = "2.2.1"
+activity = "1.9.3"
+constraintlayout = "2.1.4"
+junit = "4.13.2"
+ext-junit = "1.2.1"
+espresso-core = "3.6.1"
+core = "1.13.1"
+play-services-location = "21.3.0"
+firebase-firestore = "25.1.0" # Added Firestore version
 
 [libraries]
-junit = { group = "junit", name = "junit", version.ref = "junit" }
-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
-material = { group = "com.google.android.material", name = "material", version.ref = "material" }
-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
+material = { module = "com.google.android.material:material", version.ref = "material" }
+activity = { module = "androidx.activity:activity", version.ref = "activity" }
+constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayout" }
+junit = { module = "junit:junit", version.ref = "junit" }
+ext-junit = { module = "androidx.test.ext:junit", version.ref = "ext-junit" }
+espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "espresso-core" }
+core = { module = "androidx.core:core", version.ref = "core" }
+play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "play-services-location" }
+firebase-firestore = { module = "com.google.firebase:firebase-firestore", version.ref = "firebase-firestore" } # Added Firestore
 
 [plugins]
-android-application = { id = "com.android.application", version.ref = "agp" }
-
+android-application = { id = "com.android.application", version = "8.7.0" }
+google-services = { id = "com.google.gms.google-services", version = "4.4.2" }

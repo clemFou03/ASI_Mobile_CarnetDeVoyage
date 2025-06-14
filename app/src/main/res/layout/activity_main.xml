@@ -1,43 +1,205 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:background="@color/background">
 
-    <RadioGroup
-        android:id="@+id/radioGroupMode"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <RadioButton
-            android:id="@+id/radioManual"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Pointage manuel" />
-        <RadioButton
-            android:id="@+id/radioAuto"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Pointage périodique (automatique)" />
-    </RadioGroup>
-
-    <Button
-        android:id="@+id/btnStart"
-        android:layout_width="match_parent"
+    <!-- En-tête de l'application avec ombre -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBar"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Départ" />
+        app:elevation="8dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-    <Button
-        android:id="@+id/btnPoint"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Pointage"
-        android:visibility="gone" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/primary"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp">
 
-    <Button
-        android:id="@+id/btnEnd"
-        android:layout_width="match_parent"
+            <!-- Icône de l'application -->
+            <ImageView
+                android:id="@+id/logo"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginEnd="16dp"
+                android:src="@drawable/ic_logo"
+                android:background="@android:color/transparent"
+                android:transitionName="logo_transition"
+                android:clickable="true"
+                android:focusable="true"
+                android:scaleType="fitXY"
+                android:contentDescription="Logo de Carnet de Voyage" />
+
+            <!-- Titre -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Carnet de Voyage"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                android:fontFamily="sans-serif-condensed"
+                android:shadowColor="@color/shadow"
+                android:shadowRadius="4"
+                android:shadowDx="2"
+                android:shadowDy="2"
+                android:background="@android:color/transparent" />
+        </LinearLayout>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- Carte principale -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/mainContentCard"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_margin="16dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="6dp"
+        app:layout_constraintTop_toBottomOf="@id/appBar"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavigation"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/mainContent"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="24dp">
+
+            <!-- Groupe de sélection du mode -->
+            <RadioGroup
+                android:id="@+id/radioGroupMode"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
+
+                <com.google.android.material.radiobutton.MaterialRadioButton
+                    android:id="@+id/radioManual"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Pointage manuel"
+                    android:checked="true"
+                    android:drawableStart="@drawable/ic_manual"
+                    android:drawablePadding="8dp"
+                    android:textColor="@color/on_surface"
+                    android:padding="8dp"
+                    android:singleLine="true"
+                    app:buttonTint="@color/primary"
+                    app:iconSize="24dp" />
+
+                <com.google.android.material.radiobutton.MaterialRadioButton
+                    android:id="@+id/radioAuto"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Pointage automatique"
+                    android:drawableStart="@drawable/ic_automatic"
+                    android:drawablePadding="8dp"
+                    android:textColor="@color/on_surface"
+                    android:padding="8dp"
+                    android:singleLine="true"
+                    app:buttonTint="@color/primary"
+                    app:iconSize="24dp" />
+            </RadioGroup>
+
+            <!-- Bouton Départ -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnStart"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:drawableStart="@drawable/ic_start"
+                android:drawablePadding="12dp"
+                android:gravity="center"
+                android:padding="16dp"
+                android:text="Départ"
+                android:textAllCaps="false"
+                android:textAppearance="?attr/textAppearanceButton"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                app:backgroundTint="@color/primary"
+                app:cornerRadius="16dp"
+                app:iconSize="20dp"
+                app:layout_constraintTop_toBottomOf="@id/radioGroupMode"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="32dp"
+                android:transitionName="btn_start_transition" />
+
+            <!-- Bouton Pointage -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnPoint"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Pointage"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:textAppearance="?attr/textAppearanceButton"
+                android:gravity="center"
+                android:drawableStart="@drawable/ic_point"
+                android:drawablePadding="12dp"
+                android:padding="16dp"
+                android:textSize="18sp"
+                app:cornerRadius="16dp"
+                app:backgroundTint="@color/accent_point"
+                app:iconSize="20dp"
+                app:layout_constraintTop_toBottomOf="@id/btnStart"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="16dp"
+                android:visibility="gone"
+                android:transitionName="btn_point_transition" />
+
+            <!-- Bouton Arrivée -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnEnd"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Arrivée"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:textAppearance="?attr/textAppearanceButton"
+                android:gravity="center"
+                android:drawableStart="@drawable/ic_fin"
+                android:drawablePadding="12dp"
+                android:padding="16dp"
+                android:textSize="18sp"
+                app:cornerRadius="16dp"
+                app:backgroundTint="@color/accent_end"
+                app:iconSize="20dp"
+                app:layout_constraintTop_toBottomOf="@id/btnPoint"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="16dp"
+                android:visibility="gone"
+                android:transitionName="btn_end_transition" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Barre de navigation inférieure -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigation"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Fin"
-        android:visibility="gone" />
-</LinearLayout>
+        app:menu="@menu/bottom_nav_menu"
+        app:backgroundTint="@color/surface"
+        app:itemIconTint="@color/primary"
+        app:itemTextColor="@color/primary"
+        app:elevation="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
