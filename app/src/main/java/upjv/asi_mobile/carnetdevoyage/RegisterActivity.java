@@ -13,7 +13,12 @@ import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.Objects;
 
+/**
+ * Activité d'inscription utilisateur
+ * Crée un compte Firebase Auth + stocke les données utilisateur dans Firestore
+ */
 public class RegisterActivity extends AppCompatActivity {
+    // Composants d'interface pour la saisie
     private TextInputEditText etEmail, etUsername, etPassword;
     private TextView tvMessage;
     private DatabaseHelper dbHelper;
@@ -32,7 +37,7 @@ public class RegisterActivity extends AppCompatActivity {
         TextView tvGoToLogin = findViewById(R.id.tvGoToLogin);
         dbHelper = new DatabaseHelper();
 
-        // Redirection vers l'écran de connexion
+        // Redirection vers la connexion
         tvGoToLogin.setOnClickListener(v -> {
             Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
             startActivity(intent);
@@ -40,16 +45,18 @@ public class RegisterActivity extends AppCompatActivity {
 
         // Gestion de l'inscription
         btnRegister.setOnClickListener(v -> {
+            // Récupération et nettoyage des données
             String email = Objects.requireNonNull(etEmail.getText()).toString().trim();
             String username = Objects.requireNonNull(etUsername.getText()).toString().trim();
             String password = Objects.requireNonNull(etPassword.getText()).toString().trim();
-            // Vérification des champs vides
+            // Vérification des champs
             if (email.isEmpty() || username.isEmpty() || password.isEmpty()) {
                 tvMessage.setText(R.string.register_txt_champs_vide);
                 tvMessage.setTextColor(ContextCompat.getColor(this,android.R.color.holo_red_dark));
                 return;
             }
             // Appel à la méthode d'inscription
+            // Crée le compte Auth + stocke les données utilisateur
             dbHelper.registerUser(email, username, password, (success, message) -> {
                 if (success) {
                     tvMessage.setText(message);
@@ -58,7 +65,7 @@ public class RegisterActivity extends AppCompatActivity {
                     new Handler(Looper.getMainLooper()).postDelayed(() -> {
                         Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
                         startActivity(intent);
-                        finish();
+                        finish(); // Empêche le retour sur l'écran d'inscription
                     }, 1000);
                 } else {
                     tvMessage.setText(message);

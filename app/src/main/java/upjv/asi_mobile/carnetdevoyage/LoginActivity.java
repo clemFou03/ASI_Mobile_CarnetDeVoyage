@@ -13,6 +13,10 @@ import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.Objects;
 
+/**
+ * Activité de connexion utilisateur
+ * Gère l'authentification via Firebase Auth avec validation des champs
+ */
 public class LoginActivity extends AppCompatActivity {
     private TextInputEditText etIdentifier, etPassword;
     private TextView tvMessage;
@@ -23,15 +27,15 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        // Initialisation des vues et de l'aide à la base de données
+        // Initialisation des vues
         etIdentifier = findViewById(R.id.etIdentifier);
         etPassword = findViewById(R.id.etPassword);
         Button btnLogin = findViewById(R.id.btnLogin);
         tvMessage = findViewById(R.id.tvMessage);
         TextView tvGoToRegister = findViewById(R.id.tvGoToRegister);
-        dbHelper = new DatabaseHelper();
+        dbHelper = new DatabaseHelper(); // Initialisation du helper pour les opérations Firebase
 
-        // Redirection vers l'écran d'inscription
+        // Redirection vers l'inscription
         tvGoToRegister.setOnClickListener(v -> {
             Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
             startActivity(intent);
@@ -39,6 +43,7 @@ public class LoginActivity extends AppCompatActivity {
 
         // Gestion de la connexion
         btnLogin.setOnClickListener(v -> {
+            // Récupération et nettoyage des données saisies
             String identifier = Objects.requireNonNull(etIdentifier.getText()).toString().trim();
             String password = Objects.requireNonNull(etPassword.getText()).toString().trim();
             // Vérification des champs vides
@@ -59,6 +64,7 @@ public class LoginActivity extends AppCompatActivity {
                         finish();
                     }, 1000);
                 } else {
+                    // erreur de connexion
                     tvMessage.setText(message);
                     tvMessage.setTextColor(ContextCompat.getColor(this,android.R.color.holo_red_dark));
                 }
