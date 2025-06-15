@@ -41,6 +41,9 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Objects;
 
+import upjv.asi_mobile.carnetdevoyage.model.PointGPS;
+import upjv.asi_mobile.carnetdevoyage.model.Trajet;
+
 public class MainActivity extends AppCompatActivity {
     private BottomNavigationView bottomNavigation;
     private MaterialButton btnStart, btnPoint, btnEnd;
@@ -121,7 +124,9 @@ public class MainActivity extends AppCompatActivity {
                 if (locationResult.getLastLocation() != null) {
                     double latitude = locationResult.getLastLocation().getLatitude();
                     double longitude = locationResult.getLastLocation().getLongitude();
-                    dbHelper.addPoint(currentTrajetId, latitude, longitude, (success) -> {
+                    String timestamp = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault()).format(new Date());
+                    PointGPS point = new PointGPS(String.valueOf(System.currentTimeMillis()), currentTrajetId, latitude, longitude, timestamp);
+                    dbHelper.addPoint(currentTrajetId, point, (success) -> {
                         if (success) {
                             Toast.makeText(MainActivity.this, R.string.point_ajout_reussi, Toast.LENGTH_SHORT).show();
                         } else {
@@ -221,8 +226,10 @@ public class MainActivity extends AppCompatActivity {
         btnEnd.setVisibility(View.VISIBLE);
         bottomNavigation.setEnabled(false);
 
-        // Création du trajet dans Firestore
-        currentTrajetId = dbHelper.addTrajet(titre);
+        // Création du trajet avec un ID unique
+        String trajetId = String.valueOf(System.currentTimeMillis());
+        Trajet trajet = new Trajet(trajetId, titre);
+        currentTrajetId = dbHelper.addTrajet(trajet);
 
         if (isManualMode) {
             btnPoint.setVisibility(View.VISIBLE);
@@ -271,7 +278,9 @@ public class MainActivity extends AppCompatActivity {
                     if (locationResult.getLastLocation() != null) {
                         double latitude = locationResult.getLastLocation().getLatitude();
                         double longitude = locationResult.getLastLocation().getLongitude();
-                        dbHelper.addPoint(currentTrajetId, latitude, longitude, (success) -> {
+                        String timestamp = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault()).format(new Date());
+                        PointGPS point = new PointGPS(String.valueOf(System.currentTimeMillis()), currentTrajetId, latitude, longitude, timestamp);
+                        dbHelper.addPoint(currentTrajetId, point, (success) -> {
                             if (success) {
                                 Toast.makeText(MainActivity.this, R.string.point_ajout_reussi, Toast.LENGTH_SHORT).show();
                             } else {
